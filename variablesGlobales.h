@@ -48,3 +48,21 @@ aLa0nm68wrb3rUFrfw7uftlV0yE3K+K6CjTG7VR2Aobae1OO99AfDgHtpqfV7bEm
 #define home_voltage 220.0
 #define device_name "ArduinoDevice01" // NOMBRE DEL DISPOSITIVO
 #define user_Name "claudioraulmercedes@gmail.com" // USUARIO 
+//colores de pantallas
+#define  BLACK   0x0000
+#define BLUE    0x001F
+#define RED     0xF800
+#define GREEN   0x07E0
+#define CYAN    0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW  0xFFE0
+#define WHITE   0xFFFF
+//pines de pantallas LCD
+#define TFT_DC 7 //PIN TFT DC DE LA PANTALLA LCD ""2.8
+#define TFT_CS 6 //pin tft de la pantalla LCD ""2.8
+#define libName "Proyecto final de tesis -> Claudio Brito MATRICULA 16-1769" // Nombre del proyecto
+#define testFrequency 60
+#define relayOnePin 3 //PIN RELE #1
+#define relayTwoPin 2 //PIN RELE #2
+#define relayThreePin 1 //PIN RELE #3
+#define printPeriod 1000
