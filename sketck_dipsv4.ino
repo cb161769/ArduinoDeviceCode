@@ -10,6 +10,7 @@
 #include <ArduinoJson.h> // libreria para enviar JSON'S
 #include <SD.h>
 Adafruit_ADS1115 ads;
+RunningStatistics inputStats;
 #include <Filters.h>
 #include "SPI.h"
 #include "Adafruit_GFX.h"
@@ -39,11 +40,12 @@ int mVperAmp = mvVerAmp;
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 const char* LibName = libName;
 float testFrequency = 60;                     // test signal frequency (Hz)
-float windowLength = 20.0/testFrequency;     // how long to average the signal, for statistist
+float windowLength = 20.0 / testFrequency;   // how long to average the signal, for statistist
 int sensorValue = 0;
 float intercept = -0.1129; // to be adjusted based on calibration testing
 float slope = 0.0621; // to be adjusted based on calibration testing
 float current_amps;
+unsigned long previousMillis = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(57600);
@@ -58,36 +60,18 @@ void setup() {
   delay(2500);
   tft.fillScreen(ILI9341_WHITE);
 
-  // read diagnostics (optional but can help debug problems)
-  //  uint8_t x = tft.readcommand8(ILI9341_RDMODE);
-  //  Serial.print("Display Power Mode: 0x"); Serial.println(x, HEX);
-  //  x = tft.readcommand8(ILI9341_RDMADCTL);
-  //  Serial.print("MADCTL Mode: 0x"); Serial.println(x, HEX);
-  //  x = tft.readcommand8(ILI9341_RDPIXFMT);
-  //  Serial.print("Pixel Format: 0x"); Serial.println(x, HEX);
-  //  x = tft.readcommand8(ILI9341_RDIMGFMT);
-  //  Serial.print("Image Format: 0x"); Serial.println(x, HEX);
-  //  x = tft.readcommand8(ILI9341_RDSELFDIAG);
-  //  Serial.print("Self Diagnostic: 0x"); Serial.println(x, HEX);
-
   if (!ECCX08.begin()) {
-    //    Serial.println("no esta presente el serial EXCC08");
     tft.println("no esta presente el serial EXCC08");
   }
   if (WiFi.status() == WL_NO_SHIELD) {
     tft.setTextSize(1);
     tft.setTextColor(ILI9341_RED);
     tft.println("WiFi no conectado!");
-    // digitalWrite(redLED,HIGH);
-    // don't continue:
-    //display.clearDisplay();
-    // display.setCursor(0,0);             // Start at top-left corner
-    //display.println(F("WiFi no conectado"));
-    // display.display();
+
 
 
     while (true);
-    // digitalWrite(redLED,LOW);
+
   }
   if (WiFi.status() == WL_NO_SHIELD) {
     tft.setTextColor(ILI9341_RED);
@@ -107,12 +91,7 @@ void setup() {
     delay(10000);
     // digitalWrite(redLED,LOW);
   }
-  //  Serial.print("Inicializar  Tarjeta SD...");
-  //  if (!SD.begin(chipSelect)) {
-  //    Serial.println("Tarjeta SD no Presente");
-  //    // don't do anything more:
-  //    while (1);
-  //  }
+
   tft.setCursor(20, 46);
   tft.setTextColor(ILI9341_GREEN);
   tft.setTextSize(2);
@@ -133,23 +112,22 @@ void setup() {
 }
 
 void loop() {
+
   // put your main code here, to run repeatedly:
   delay(10000);
   if (!mqttClient.connected()) {
-    // Cliente MQTT desconectado, para conectarse
     connectMQTT();
 
   }
   mqttClient.poll();
   if (millis() - lastMilis > 5000) {
     lastMilis = millis();
-
     publishMessage();
   }
 
+
 }
 unsigned long getTime() {
-  // get the current time from the WiFi module
   return WiFi.getTime();
 }
 void connectMQTT() {
@@ -162,15 +140,10 @@ void connectMQTT() {
 
 
   while (!mqttClient.connect(broker, 8883)) {
-    // digitalWrite(redLED,HIGH);
-    // digitalWrite(redGreen,LOW);
-    // digitalWrite(redLED,HIGH);
-    // failed, retry
     tft.setTextColor(ILI9341_RED);
     tft.println("INTENTO FALLIDO");
 
     delay(5000);
-    // digitalWrite(redLED,LOW);
   }
   //  Serial.println();
   tft.setTextColor(ILI9341_GREEN);
@@ -215,8 +188,6 @@ void publishMessage() {
   float test = getVoltageTest();
   float CT1_VRMS = (CT1_Voltage / 2.0) * 0.707;
   float CT1_APMSRMS = (CT1_VRMS * 1000) / mVperAmp;
-
-  // float CT1_watts = 110.0 * CT1_APMSRMS;
   float CT1_watts = 110.0 * CT1_Voltage;
   String CT1_STATUS = "Conectado";
   tft.setTextSize(5);
@@ -224,14 +195,10 @@ void publishMessage() {
   tft.print(test, 3);
   tft.setTextSize(3);
   tft.setCursor(204, 124);
-  tft.println("Test");
-  // watts = amps * homeVoltaje;
+  tft.println("Test")
   tft.setTextSize(1);
   tft.println("Publicando mensaje a AWS");
   long rssi = WiFi.RSSI();
-  // emon.calcVI(20,2000);
-  // float realPower = emon.realPower;
-  // float apparentPower   = emon.apparentPower;
   unsigned long time_ = getTime();
   tft.setTextSize(1);
   tft.setCursor(20, 158);
@@ -242,7 +209,6 @@ void publishMessage() {
   tft.print("       ");
   tft.print(CT1_Voltage, 3);
   tft.println(" A");
-
   tft.setTextSize(1);
   tft.setCursor(20, 198);
   tft.print("WIFI ");
@@ -255,8 +221,6 @@ void publishMessage() {
   tft.println(" Señal");
   StaticJsonDocument<300> jsonDoc;
   JsonObject stateObj = jsonDoc.createNestedObject("readings");
-  // amps = emon.calcIrms(1480);
-  // watts = amps * homeVoltaje;
   stateObj["device_name"] = deviceName;
   stateObj["device_UserName"] = userName;
   stateObj["wifi_IP"] = WiFi.gatewayIP();
@@ -264,42 +228,30 @@ void publishMessage() {
   stateObj["wifi_strength"] = WiFi.RSSI();
   stateObj["device_amps"] = amps;
   stateObj["device_watts"] = watts;
+  // creacion de objectos en el arreglo de Conexiones
   JsonArray relays = jsonDoc.createNestedArray("Relays");
   JsonObject stateObj1 = relays.createNestedObject();
-
   stateObj1["Name"] = "Conexion 1";
   stateObj1["CT1_Amps"] = CT1_Voltage;
   stateObj1["CT1_Watts"] = CT1_watts;
   stateObj1["CT1_Status"] = CT1_STATUS;
-  //    JsonObject stateObj3 = jsonDoc.createNestedObject("CT2");
-  //    stateObj3["CT2_status"] = CT1_STATUS;
+  JsonObject stateObj2 = relays.createNestedObject();
+  // poner CT2 Conexion
+  stateObj2["Name"] = "Conexion 2";
+  stateObj2["CT1_Amps"] = CT1_Voltage;
+  stateObj2["CT1_Watts"] = CT1_watts;
+  stateObj2["CT1_Status"] = CT1_STATUS;
+  JsonObject stateObj3 = relays.createNestedObject();
+  // poner CT3 Conexion
+  stateObj3["Name"] = "Conexion 3";
+  stateObj3["CT1_Amps"] = CT1_Voltage;
+  stateObj3["CT1_Watts"] = CT1_watts;
+  stateObj3["CT1_Status"] = CT1_STATUS;
   char jsonBuffer[300];
   unsigned long payloadSize = measureJson(jsonDoc); //serializeJson(jsonDoc, jsonBuffer);
-
-  // Serial.println("error al registrar los logs");
-  // Serial.println(jsonBuffer);
-
-
-
-  // sprintf(msg,"{'lecturas':['senal_wiFi':%f, 'dispositivoAmperios':%fA,'dispositivoWatts:%fW']}",rssi,amps,watts);
-
   mqttClient.beginMessage(deviceReadings, payloadSize);
   serializeJson(jsonDoc, mqttClient);
-  //  mqttClient.print(serializeJson(jsonDoc, jsonBuffer));
-
   mqttClient.endMessage();
-  //  File dataFile = SD.open("datalog.txt", FILE_WRITE);
-  //  if (dataFile) {
-  //    Serial.println("LOGGEANDO LECTURAS DEL DISPOSITIVO");
-  //    serializeJson(jsonDoc, dataFile);
-  //    // dataFile.println(message);
-  //    dataFile.close();
-  //    // print to the serial port too:
-  //    // Serial.println(message);
-  //  }
-  //  //LogDeviceReadings(jsonDoc);
-  //
-  //  // Serial.println(jsonBuffer);
 
 }
 float getCurrent() {
@@ -403,29 +355,69 @@ float getVoltageCT1() {
   return result;
 }
 float getVoltageTest() {
-RunningStatistics inputStats;                 // create statistics to look at the raw test signal
+  // create statistics to look at the raw test signal
   inputStats.setWindowSecs( windowLength );
-   
-  while( true ) {   
+
+  while ( true ) {
     sensorValue = analogRead(SENSOR_1);  // read the analog in value:
     inputStats.input(sensorValue);  // log to Stats function
-        
-    if((unsigned long)(millis() - previousMillis) >= printPeriod) {
+
+    if ((unsigned long)(millis() - previousMillis) >= printPeriod) {
       previousMillis = millis();   // update time
-      
+
       // display current values to the screen
-      
+
       // output sigma or variation values associated with the inputValue itsel
-     
+
       // convert signal sigma value to current in amps
       current_amps = intercept + slope * inputStats.sigma();
-     return current_amps;
+      return current_amps;
     }
   }
 
 }
 
 //LECTURA DE VOLTAJE del ct2
-float getVoltageCT2() {}
+float getVoltageCT2() {
+    // create statistics to look at the raw test signal
+  inputStats.setWindowSecs( windowLength );
+
+  while ( true ) {
+    sensorValue = analogRead(SENSOR_2);  // read the analog in value:
+    inputStats.input(sensorValue);  // log to Stats function
+
+    if ((unsigned long)(millis() - previousMillis) >= printPeriod) {
+      previousMillis = millis();   // update time
+
+      // display current values to the screen
+
+      // output sigma or variation values associated with the inputValue itsel
+
+      // convert signal sigma value to current in amps
+      current_amps = intercept + slope * inputStats.sigma();
+      return current_amps;
+    }
+  }
+  }
 //LECTURA DE VOLTAJE del ct3
-float getVoltageCT3() {}
+float getVoltageCT3() {
+    // create statistics to look at the raw test signal
+  inputStats.setWindowSecs( windowLength );
+
+  while ( true ) {
+    sensorValue = analogRead(SENSOR_3);  // read the analog in value:
+    inputStats.input(sensorValue);  // log to Stats function
+
+    if ((unsigned long)(millis() - previousMillis) >= printPeriod) {
+      previousMillis = millis();   // update time
+
+      // display current values to the screen
+
+      // output sigma or variation values associated with the inputValue itsel
+
+      // convert signal sigma value to current in amps
+      current_amps = intercept + slope * inputStats.sigma();
+      return current_amps;
+    }
+  }
+  }
