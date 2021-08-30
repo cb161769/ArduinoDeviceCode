@@ -64,3 +64,14 @@ aLa0nm68wrb3rUFrfw7uftlV0yE3K+K6CjTG7VR2Aobae1OO99AfDgHtpqfV7bEm
 #define TFT_DC 7 //PIN TFT DC DE LA PANTALLA LCD ""2.8
 #define TFT_CS 6 //pin tft de la pantalla LCD ""2.8
 #define libName "Proyecto final de tesis -> Claudio Brito MATRICULA 16-1769" // Nombre del proyecto
+#define generalTopic "arn:aws:iot:us-west-2:170095147869:topic/$aws/rules/awsdynamodbcognitoapideviotRule174L17O1T8HZT"
+#define IOT_RULE_1 "/turnOnDeviceOne"
+#define IOT_RULE_1_OFF "/turnOffDeviceOne"
+#define IOT_RULE_2 "/turnOnDeviceTwo"
+#define IOT_RULE_2_OFF "/turnOffDeviceTwo"
+#define IOT_RULE_3 "/turnOnDeviceThree"
+#define IOT_RULE_3_OFF "/turnOffDeviceThree"
+#define IOT_RULE_4 "/turnOnDeviceFour"
+#define IOT_RULE_4_OFF "/turnOffDeviceFour"
+#define IOT_RULE_A "/turnOnAllDevices"
+#define IOT_RULE_A_OFF "/turnOffAllDevices"
