@@ -232,7 +232,8 @@ void publishMessage() {
   tft.print("       ");
   tft.print(rssi, 3);
   tft.println(" Señal");
-  StaticJsonDocument<300> jsonDoc;
+ // StaticJsonDocument<300> jsonDoc;
+ DynamicJsonDocument jsonDoc(300);
   JsonObject stateObj = jsonDoc.createNestedObject("readings");
   stateObj["device_name"] = deviceName;
   stateObj["device_UserName"] = userName;
