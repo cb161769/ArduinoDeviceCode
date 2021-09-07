@@ -1,21 +1,13 @@
-# Security Policy
-
-## Supported Versions
-
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+# Politicas de seguridad
+El uso de deste codigo fuente, asi como la creacion del dispositivo es a RIESGO de la persona que descargue el mismo.
+## Versionamiento
+Esta seccion es para determinar de que es TOTALMENTE seguro utilizar este codigo fuente a plenitud.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.0.0   | :x:                |
 
-## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+## Vulnerabilidades
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Las vulnerabilidades de este proyecto, incluyen temas de uso de Electricidad , por lo tanto se requiere de que la persona que va a descargar este codigo fuente CONOZCA de electricidad.
