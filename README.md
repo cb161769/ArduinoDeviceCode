@@ -28,3 +28,59 @@ Este codigo fuente tiene la vision de ser el ente para leer las lecturas del pas
 7. luego ejecuta el siguente 
 script: `publish`
 ## Documentacion sobre calibracion de sensores 
+![Screenshot](DSC_0182.jpg)
+
+para calibar los sensores tanto e, sensor ACS712, como el sensor CT SCT-030-30, se realizo el siguiente codigo: 
+![Screenshot](DSC_0187.jpg)
+### Codigo de calibracion sensor ACS712
+
+```cpp
+float getVoltageTest() {
+RunningStatistics inputStats;                 // create statistics to look at the raw test signal
+  inputStats.setWindowSecs( windowLength );
+   
+  while( true ) {   
+    sensorValue = analogRead(SENSOR_1);  // read the analog in value:
+    inputStats.input(sensorValue);  // log to Stats function
+        
+    if((unsigned long)(millis() - previousMillis) >= printPeriod) {
+      previousMillis = millis();   // update time
+      
+      // display current values to the screen
+      
+      // output sigma or variation values associated with the inputValue itsel
+     
+      // convert signal sigma value to current in amps
+      current_amps = intercept + slope * inputStats.sigma();
+     return current_amps;
+    }
+  }
+
+}
+
+```
+### Codigo de calibracion de sensor SCT 
+
+```cpp
+float getCurrent() {
+  float Volt_diferencial;
+  float current;
+  float sum = 0;
+  long times = millis();
+  int counter = 0;
+  while (millis() - times < 1000)
+  {
+    Volt_diferencial = ads.readADC_Differential_0_1() * multiplier;
+    current = Volt_diferencial * FACTOR;
+    current /= 1000.0;
+
+    sum += sq(current);
+    counter = counter + 1;
+  }
+  current = sqrt(sum / counter);
+  return (current);
+
+
+}
+
+```
